@@ -26,6 +26,7 @@
     "yaml": "^2.8.2"
   },
   "dependencies": {
-    "chokidar": "^3.6.0"
+    "chokidar": "^3.6.0",
+    "liquidjs": "^10.25.0"
   }
 }
