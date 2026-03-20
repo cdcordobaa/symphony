@@ -28,7 +28,11 @@ async function bootstrap() {
   const workspaceManager = new WorkspaceManager({ root: rootPath });
   
   const codexCommand = typeof config.codex?.command === 'string' ? config.codex.command : 'claude';
-  const agentRunnerFactory = (issueId: string) => new AgentRunner({ command: codexCommand });
+  const approvalPolicy = typeof config.codex?.approval_policy === 'string' ? config.codex.approval_policy : undefined;
+  const agentRunnerFactory = (issueId: string) => new AgentRunner({ 
+    command: codexCommand,
+    approvalPolicy: approvalPolicy
+  });
   
   const orchestrator = new Orchestrator(orchestratorConfig, client, agentRunnerFactory, workspaceManager);
   

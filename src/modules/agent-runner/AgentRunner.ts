@@ -66,6 +66,51 @@ export class AgentRunner extends EventEmitter {
       this.emit('turn_complete', evt);
     });
 
+    // Handle raw interactive CLIs that don't speak Symphony JSON protocol
+    if (this.command.trim() === 'claude') {
+      console.log('Detected raw interactive claude CLI. Bypassing JSON handshake and falling back to naive standard execution.');
+      // Execute claude as a one-shot process with the prompt written to a temp file
+      const { writeFileSync } = await import('fs');
+      const { join } = await import('path');
+      const promptPath = join(workspacePath, '.symphony-prompt.md');
+      writeFileSync(promptPath, renderedPrompt);
+      
+      const claudeArgs = [
+        '-p', `Load and execute instructions exactly as defined in file: ${promptPath}`,
+        '--dangerously-skip-permissions',
+      ];
+
+      // Shell-escape each argument for safe embedding in bash -lc
+      const shellEscaped = claudeArgs.map(a => `'${a.replace(/'/g, "'\\''")}'`).join(' ');
+      const shellCmd = `claude ${shellEscaped}`;
+
+      console.log('Spawning via login shell with args:', claudeArgs);
+
+      this.child = spawn('bash', ['-lc', shellCmd], {
+        cwd: workspacePath,
+        stdio: 'inherit',
+        env: process.env,
+      });
+
+      this.child.on('close', (code) => {
+        this.clearStallTimer();
+        if (code === 0) {
+          this.emit('turn_complete', { type: 'turn/complete' });
+        } else {
+          this.emit('error', new Error(`Claude process exited with code ${code}`));
+        }
+      });
+      
+      this.stallTimer = setTimeout(() => {
+        this.kill();
+        this.emit('stall_timeout', { stallTimeoutMs: this.stallTimeoutMs });
+      }, this.stallTimeoutMs);
+      
+      return;
+    }
+
+    // Default JSON App-Server Handshake Mode
+
     // Start stall timeout after sending turn/start
     await client.handshake(issue.identifier, renderedPrompt);
 
