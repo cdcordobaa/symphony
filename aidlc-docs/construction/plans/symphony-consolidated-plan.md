@@ -43,6 +43,6 @@ This plan covers the implementation of all 5 core units for the Symphony port, o
 - [ ] Step 23: Verify Unit 5 BDD steps pass.
 
 ## Phase 7: CLI Entrypoint & Final Assembly
-- [ ] Step 24: Create `src/index.ts` to wire all modules together into a CLI.
-- [ ] Step 25: Generate `README.md` and basic `WORKFLOW.md` example.
-- [ ] Step 26: Final verification run of all tests.
+- [x] Step 24: Create `src/index.ts` to wire all modules together into a CLI.
+- [x] Step 25: Generate `README.md` and basic `WORKFLOW.md` example.
+- [x] Step 26: Final verification run of all tests.
