@@ -1,5 +1,14 @@
 {
   // Visit https://aka.ms/tsconfig to read more about this file
+  "ts-node": {
+    "require": ["./src/require-hook.js"],
+    "compilerOptions": {
+      "module": "CommonJS",
+      "moduleResolution": "node",
+      "verbatimModuleSyntax": false,
+      "esModuleInterop": true
+    }
+  },
   "compilerOptions": {
     // File Layout
     // "rootDir": "./src",
