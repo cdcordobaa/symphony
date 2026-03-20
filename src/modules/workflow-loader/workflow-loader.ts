@@ -7,6 +7,7 @@ import type { FSWatcher } from 'chokidar';
 import type { WorkflowConfig } from './types';
 
 const FRONT_MATTER_REGEX = /^---\n([\s\S]*?)\n---/;
+const FRONT_MATTER_STRIP_REGEX = /^---\n[\s\S]*?\n---\n?/;
 
 function resolveValue(value: unknown): unknown {
   if (typeof value === 'string') {
@@ -41,6 +42,30 @@ export class WorkflowLoader extends EventEmitter {
 
     const content = fs.readFileSync(resolvedPath, 'utf-8');
     return WorkflowLoader.parse(content);
+  }
+
+  /**
+   * Reads a WORKFLOW.md file and returns both the parsed config and the raw body text.
+   */
+  static async loadWithBody(filePath: string): Promise<{ config: WorkflowConfig; body: string }> {
+    const resolvedPath = WorkflowLoader.resolvePath(filePath);
+
+    if (!fs.existsSync(resolvedPath)) {
+      throw new Error(`WORKFLOW.md not found at: ${resolvedPath}`);
+    }
+
+    const content = fs.readFileSync(resolvedPath, 'utf-8');
+    return {
+      config: WorkflowLoader.parse(content),
+      body: WorkflowLoader.parseBody(content),
+    };
+  }
+
+  /**
+   * Extracts the markdown body (everything after the front-matter block).
+   */
+  static parseBody(content: string): string {
+    return content.replace(FRONT_MATTER_STRIP_REGEX, '');
   }
 
   /**
